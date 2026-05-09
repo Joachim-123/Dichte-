@@ -41,8 +41,26 @@
 
   #formula {
     margin-top: 20px;
-    font-size: 1.2em;
-    font-weight: 500;
+    font-size: 1.8em;
+    line-height: 1.4;
+  }
+
+  /* Darstellung eines Bruchs */
+  .fraction {
+    display: inline-block;
+    vertical-align: middle;
+    text-align: center;
+    margin: 0 4px;
+  }
+
+  .fraction .top {
+    display: block;
+    border-bottom: 2px solid #000;
+    padding: 0 8px;
+  }
+
+  .fraction .bottom {
+    display: block;
   }
 </style>
 </head>
@@ -66,7 +84,20 @@
 
 <div id="cube"></div>
 
-<p id="formula">ρ = 50 / 100 = 0.50</p>
+<p id="formula">
+  ρ =
+  <span class="fraction">
+    <span class="top">m</span>
+    <span class="bottom">V</span>
+  </span>
+  =
+  <span class="fraction">
+    <span class="top" id="mNum">50</span>
+    <span class="bottom" id="vNum">100</span>
+  </span>
+  =
+  <span id="rhoValue">0.50</span>
+</p>
 
 <script>
 const mass = document.getElementById("mass");
@@ -75,19 +106,24 @@ const cube = document.getElementById("cube");
 
 const mVal = document.getElementById("mVal");
 const vVal = document.getElementById("vVal");
-const formula = document.getElementById("formula");
+
+const mNum = document.getElementById("mNum");
+const vNum = document.getElementById("vNum");
+const rhoValue = document.getElementById("rhoValue");
 
 function update() {
   const m = Number(mass.value);
   const V = Number(volume.value);
   const rho = m / V;
 
-  // Werte anzeigen
+  // Werte neben den Reglern aktualisieren
   mVal.textContent = m;
   vVal.textContent = V;
 
-  // Formel anzeigen
-  formula.textContent = `ρ = ${m} / ${V} = ${rho.toFixed(2)}`;
+  // Formel aktualisieren
+  mNum.textContent = m;
+  vNum.textContent = V;
+  rhoValue.textContent = rho.toFixed(2);
 
   // Würfelgröße proportional zur dritten Wurzel des Volumens
   const size = Math.cbrt(V) * 40;
@@ -97,7 +133,7 @@ function update() {
   // Teilchen neu zeichnen
   cube.innerHTML = "";
 
-  // Teilchen als gleichmäßiges Raster anordnen
+  // Teilchen in gleichmäßigem Raster anordnen
   const n = Math.ceil(Math.sqrt(m));
   const spacing = size / n;
 
@@ -110,7 +146,7 @@ function update() {
       const p = document.createElement("div");
       p.className = "particle";
 
-      // Zentriert im Raster
+      // Zentriert im Raster positionieren
       p.style.left = (x * spacing + spacing / 2 - 2) + "px";
       p.style.top = (y * spacing + spacing / 2 - 2) + "px";
 
@@ -120,13 +156,9 @@ function update() {
   }
 }
 
-// Event-Listener
+// Regler reagieren auf Änderungen
 mass.addEventListener("input", update);
 volume.addEventListener("input", update);
 
 // Initiale Darstellung
 update();
-</script>
-
-</body>
-</html>

@@ -2,60 +2,117 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Dichte Würfel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dichte-Würfel</title>
 <style>
-  body { font-family: system-ui; text-align: center; }
-  #cube { margin: 20px auto; border: 2px solid black; position: relative; }
-  .particle { position: absolute; width: 4px; height: 4px; background: black; }
+  body {
+    font-family: system-ui, sans-serif;
+    text-align: center;
+    margin: 20px;
+  }
+
+  h3 {
+    margin-bottom: 20px;
+  }
+
+  .control {
+    margin: 15px 0;
+  }
+
+  input[type="range"] {
+    width: 300px;
+    max-width: 90%;
+  }
+
+  #cube {
+    margin: 30px auto;
+    border: 2px solid black;
+    position: relative;
+    background: white;
+  }
+
+  .particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: black;
+    border-radius: 50%;
+  }
+
+  #formula {
+    margin-top: 20px;
+    font-size: 1.2em;
+    font-weight: 500;
+  }
 </style>
 </head>
 <body>
 
 <h3>Dichte</h3>
 
-Masse: <span id="mVal">50</span><br>
-<input type="range" id="mass" min="1" max="200" value="50"><br><br>
+<div class="control">
+  <label>
+    Masse (m): <span id="mVal">50</span>
+  </label><br>
+  <input type="range" id="mass" min="1" max="200" value="50">
+</div>
 
-Volumen: <span id="vVal">100</span><br>
-<input type="range" id="volume" min="20" max="200" value="100">
+<div class="control">
+  <label>
+    Volumen (V): <span id="vVal">100</span>
+  </label><br>
+  <input type="range" id="volume" min="20" max="200" value="100">
+</div>
 
 <div id="cube"></div>
 
-<p>Dichte: <span id="rho">0.50</span></p>
+<p id="formula">ρ = 50 / 100 = 0.50</p>
 
 <script>
 const mass = document.getElementById("mass");
 const volume = document.getElementById("volume");
 const cube = document.getElementById("cube");
 
+const mVal = document.getElementById("mVal");
+const vVal = document.getElementById("vVal");
+const formula = document.getElementById("formula");
+
 function update() {
-  const m = +mass.value;
-  const V = +volume.value;
+  const m = Number(mass.value);
+  const V = Number(volume.value);
   const rho = m / V;
 
-  document.getElementById("mVal").textContent = m;
-  document.getElementById("vVal").textContent = V;
-  document.getElementById("rho").textContent = rho.toFixed(2);
+  // Werte anzeigen
+  mVal.textContent = m;
+  vVal.textContent = V;
 
+  // Formel anzeigen
+  formula.textContent = `ρ = ${m} / ${V} = ${rho.toFixed(2)}`;
+
+  // Würfelgröße proportional zur dritten Wurzel des Volumens
   const size = Math.cbrt(V) * 40;
   cube.style.width = size + "px";
   cube.style.height = size + "px";
 
+  // Teilchen neu zeichnen
   cube.innerHTML = "";
 
-  const n = Math.ceil(Math.cbrt(m));
+  // Teilchen als gleichmäßiges Raster anordnen
+  const n = Math.ceil(Math.sqrt(m));
   const spacing = size / n;
 
   let count = 0;
 
-  for (let x = 0; x < n; x++) {
-    for (let y = 0; y < n; y++) {
-      if (count >= m) break;
+  for (let y = 0; y < n; y++) {
+    for (let x = 0; x < n; x++) {
+      if (count >= m) return;
 
       const p = document.createElement("div");
       p.className = "particle";
-      p.style.left = (x * spacing + spacing / 2) + "px";
-      p.style.top = (y * spacing + spacing / 2) + "px";
+
+      // Zentriert im Raster
+      p.style.left = (x * spacing + spacing / 2 - 2) + "px";
+      p.style.top = (y * spacing + spacing / 2 - 2) + "px";
 
       cube.appendChild(p);
       count++;
@@ -63,8 +120,11 @@ function update() {
   }
 }
 
+// Event-Listener
 mass.addEventListener("input", update);
 volume.addEventListener("input", update);
+
+// Initiale Darstellung
 update();
 </script>
 

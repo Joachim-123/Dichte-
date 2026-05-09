@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Dichte Würfel</title>
+<style>
+  body { font-family: system-ui; text-align: center; }
+  #cube { margin: 20px auto; border: 2px solid black; position: relative; }
+  .particle { position: absolute; width: 4px; height: 4px; background: black; }
+</style>
+</head>
+<body>
+
+<h3>Dichte</h3>
+
+Masse: <span id="mVal">50</span><br>
+<input type="range" id="mass" min="1" max="200" value="50"><br><br>
+
+Volumen: <span id="vVal">100</span><br>
+<input type="range" id="volume" min="20" max="200" value="100">
+
+<div id="cube"></div>
+
+<p>Dichte: <span id="rho">0.50</span></p>
+
+<script>
+const mass = document.getElementById("mass");
+const volume = document.getElementById("volume");
+const cube = document.getElementById("cube");
+
+function update() {
+  const m = +mass.value;
+  const V = +volume.value;
+  const rho = m / V;
+
+  document.getElementById("mVal").textContent = m;
+  document.getElementById("vVal").textContent = V;
+  document.getElementById("rho").textContent = rho.toFixed(2);
+
+  const size = Math.cbrt(V) * 40;
+  cube.style.width = size + "px";
+  cube.style.height = size + "px";
+
+  cube.innerHTML = "";
+
+  const n = Math.ceil(Math.cbrt(m));
+  const spacing = size / n;
+
+  let count = 0;
+
+  for (let x = 0; x < n; x++) {
+    for (let y = 0; y < n; y++) {
+      if (count >= m) break;
+
+      const p = document.createElement("div");
+      p.className = "particle";
+      p.style.left = (x * spacing + spacing / 2) + "px";
+      p.style.top = (y * spacing + spacing / 2) + "px";
+
+      cube.appendChild(p);
+      count++;
+    }
+  }
+}
+
+mass.addEventListener("input", update);
+volume.addEventListener("input", update);
+update();
+</script>
+
+</body>
+</html>

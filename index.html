@@ -3,49 +3,68 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dichte-Würfel</title>
+<title>Dichte-Würfel in 3D</title>
 <style>
   body {
     font-family: system-ui, sans-serif;
     text-align: center;
     margin: 20px;
+    background: #ffffff;
   }
 
-  h3 {
+  h2 {
     margin-bottom: 20px;
   }
 
   .control {
-    margin: 15px 0;
+    margin: 20px 0;
   }
 
   input[type="range"] {
-    width: 300px;
+    width: 320px;
     max-width: 90%;
   }
 
-  #cube {
+  /* 3D-Bereich */
+  .scene {
+    width: 400px;
+    height: 400px;
     margin: 30px auto;
-    border: 2px solid black;
-    position: relative;
-    background: white;
+    perspective: 1000px;
   }
 
+  /* Würfel */
+  #cube {
+    position: relative;
+    margin: auto;
+    transform-style: preserve-3d;
+    transform: rotateX(-25deg) rotateY(35deg);
+  }
+
+  /* Würfelflächen */
+  .face {
+    position: absolute;
+    border: 2px solid #000;
+    background: rgba(255, 255, 255, 0.9);
+    box-sizing: border-box;
+  }
+
+  /* Teilchen */
   .particle {
     position: absolute;
     width: 4px;
     height: 4px;
-    background: black;
+    background: #000;
     border-radius: 50%;
   }
 
+  /* Formel */
   #formula {
-    margin-top: 20px;
+    margin-top: 25px;
     font-size: 1.8em;
     line-height: 1.4;
   }
 
-  /* Darstellung eines Bruchs */
   .fraction {
     display: inline-block;
     vertical-align: middle;
@@ -66,25 +85,29 @@
 </head>
 <body>
 
-<h3>Dichte</h3>
+<h2>Dichte</h2>
 
 <div class="control">
-  <label>
-    Masse (m): <span id="mVal">50</span>
-  </label><br>
+  <label>Masse (m): <span id="mVal">50</span></label><br>
   <input type="range" id="mass" min="1" max="200" value="50">
 </div>
 
 <div class="control">
-  <label>
-    Volumen (V): <span id="vVal">100</span>
-  </label><br>
+  <label>Volumen (V): <span id="vVal">100</span></label><br>
   <input type="range" id="volume" min="20" max="200" value="100">
 </div>
 
-<div id="cube"></div>
+<div class="scene">
+  <div id="cube">
+    <!-- Vorderseite mit Teilchen -->
+    <div class="face" id="front"></div>
+    <!-- Weitere sichtbare Flächen -->
+    <div class="face" id="right"></div>
+    <div class="face" id="top"></div>
+  </div>
+</div>
 
-<p id="formula">
+<div id="formula">
   ρ =
   <span class="fraction">
     <span class="top">m</span>
@@ -97,12 +120,11 @@
   </span>
   =
   <span id="rhoValue">0.50</span>
-</p>
+</div>
 
 <script>
-const mass = document.getElementById("mass");
-const volume = document.getElementById("volume");
-const cube = document.getElementById("cube");
+const massSlider = document.getElementById("mass");
+const volumeSlider = document.getElementById("volume");
 
 const mVal = document.getElementById("mVal");
 const vVal = document.getElementById("vVal");
@@ -111,56 +133,69 @@ const mNum = document.getElementById("mNum");
 const vNum = document.getElementById("vNum");
 const rhoValue = document.getElementById("rhoValue");
 
+const cube = document.getElementById("cube");
+const front = document.getElementById("front");
+const right = document.getElementById("right");
+const topFace = document.getElementById("top");
+
 function update() {
-  const m = Number(mass.value);
-  const V = Number(volume.value);
+  const m = parseInt(massSlider.value, 10);
+  const V = parseInt(volumeSlider.value, 10);
   const rho = m / V;
 
-  // Werte neben den Reglern aktualisieren
+  // Anzeigen aktualisieren
   mVal.textContent = m;
   vVal.textContent = V;
-
-  // Formel aktualisieren
   mNum.textContent = m;
   vNum.textContent = V;
   rhoValue.textContent = rho.toFixed(2);
 
-  // Würfelgröße proportional zur dritten Wurzel des Volumens
+  // Würfelgröße
   const size = Math.cbrt(V) * 40;
   cube.style.width = size + "px";
   cube.style.height = size + "px";
 
-  // Teilchen neu zeichnen
-  cube.innerHTML = "";
+  // Flächen dimensionieren
+  [front, right, topFace].forEach(face => {
+    face.style.width = size + "px";
+    face.style.height = size + "px";
+  });
 
-  // Teilchen in gleichmäßigem Raster anordnen
-  const n = Math.ceil(Math.sqrt(m));
-  const spacing = size / n;
+  // 3D-Positionierung der Flächen
+  front.style.transform = `translateZ(${size / 2}px)`;
+  right.style.transform = `rotateY(90deg) translateZ(${size / 2}px)`;
+  topFace.style.transform = `rotateX(90deg) translateZ(${size / 2}px)`;
 
+  // Leichte Schattierung
+  front.style.background = "rgba(255,255,255,0.95)";
+  right.style.background = "rgba(220,220,220,0.95)";
+  topFace.style.background = "rgba(245,245,245,0.95)";
+
+  // Teilchen auf Vorderseite zeichnen
+  front.innerHTML = "";
+
+  const cols = Math.ceil(Math.sqrt(m));
+  const spacing = size / cols;
   let count = 0;
 
-  for (let y = 0; y < n; y++) {
-    for (let x = 0; x < n; x++) {
+  for (let row = 0; row < cols; row++) {
+    for (let col = 0; col < cols; col++) {
       if (count >= m) return;
 
-      const p = document.createElement("div");
-      p.className = "particle";
+      const particle = document.createElement("div");
+      particle.className = "particle";
+      particle.style.left = (col * spacing + spacing / 2 - 2) + "px";
+      particle.style.top = (row * spacing + spacing / 2 - 2) + "px";
 
-      // Zentriert im Raster positionieren
-      p.style.left = (x * spacing + spacing / 2 - 2) + "px";
-      p.style.top = (y * spacing + spacing / 2 - 2) + "px";
-
-      cube.appendChild(p);
+      front.appendChild(particle);
       count++;
     }
   }
 }
 
-// Regler reagieren auf Änderungen
-mass.addEventListener("input", update);
-volume.addEventListener("input", update);
+massSlider.addEventListener("input", update);
+volumeSlider.addEventListener("input", update);
 
-// Initiale Darstellung
 update();
 </script>
 

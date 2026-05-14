@@ -3,199 +3,324 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dichte-Würfel in 3D</title>
+<title>Interaktives Dichte-Widget</title>
+
 <style>
-  body {
-    font-family: system-ui, sans-serif;
-    text-align: center;
-    margin: 20px;
+body {
+    margin: 0;
+    padding: 24px;
+    font-family: Arial, sans-serif;
+    background: #f5f7fb;
+    color: #222;
+}
+
+/* Linke Spalte = Legende, rechte Spalte = große Waage */
+.container {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 24px;
+    max-width: 1500px;
+    margin: 0 auto;
+}
+
+.card {
     background: #ffffff;
-  }
+    border-radius: 18px;
+    padding: 24px;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.08);
+}
 
-  h2 {
-    margin-bottom: 20px;
-  }
+h1 {
+    margin-top: 0;
+    font-size: 32px;
+}
 
-  .control {
-    margin: 20px 0;
-  }
+h2 {
+    margin-top: 0;
+    font-size: 24px;
+}
 
-  input[type="range"] {
-    width: 320px;
-    max-width: 90%;
-  }
+.slider-group {
+    margin-bottom: 30px;
+}
 
-  /* 3D-Bereich */
-  .scene {
-    width: 400px;
-    height: 400px;
-    margin: 30px auto;
-    perspective: 1000px;
-  }
+label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
 
-  /* Würfel */
-  #cube {
-    position: relative;
-    margin: auto;
-    transform-style: preserve-3d;
-    transform: rotateX(-25deg) rotateY(35deg);
-  }
+input[type="range"] {
+    width: 100%;
+}
 
-  /* Würfelflächen */
-  .face {
-    position: absolute;
-    border: 2px solid #000;
-    background: rgba(255, 255, 255, 0.9);
-    box-sizing: border-box;
-  }
+.value {
+    margin-top: 6px;
+    color: #0b5cab;
+    font-weight: bold;
+    font-size: 18px;
+}
 
-  /* Teilchen */
-  .particle {
-    position: absolute;
-    width: 4px;
-    height: 4px;
-    background: #000;
-    border-radius: 50%;
-  }
-
-  /* Formel */
-  #formula {
-    margin-top: 25px;
-    font-size: 1.8em;
-    line-height: 1.4;
-  }
-
-  .fraction {
-    display: inline-block;
-    vertical-align: middle;
+.formula {
+    background: #eef5ff;
+    border-left: 5px solid #0b5cab;
+    padding: 16px;
+    border-radius: 10px;
+    font-size: 28px;
     text-align: center;
-    margin: 0 4px;
-  }
+    margin: 24px 0 12px 0;
+}
 
-  .fraction .top {
-    display: block;
-    border-bottom: 2px solid #000;
-    padding: 0 8px;
-  }
+.small {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 20px;
+}
 
-  .fraction .bottom {
-    display: block;
-  }
+.results {
+    background: #fafafa;
+    border-radius: 12px;
+    padding: 16px;
+    font-size: 20px;
+    line-height: 2;
+}
+
+.visual {
+    height: 760px;
+}
+
+svg {
+    width: 100%;
+    height: 100%;
+}
+
+.display-text {
+    font-family: "Courier New", monospace;
+    font-weight: bold;
+    fill: #00ff66;
+}
 </style>
 </head>
 <body>
 
-<h2>Dichte</h2>
+<div class="container">
 
-<div class="control">
-  <label>Masse (m): <span id="mVal">50</span></label><br>
-  <input type="range" id="mass" min="1" max="200" value="50">
-</div>
+    <!-- LINKE SEITE: Legende -->
+    <div class="card">
+        <h2>Legende und Einstellungen</h2>
 
-<div class="control">
-  <label>Volumen (V): <span id="vVal">100</span></label><br>
-  <input type="range" id="volume" min="20" max="200" value="100">
-</div>
+        <!-- Masse -->
+        <div class="slider-group">
+            <label for="massSlider">Masse des Würfels (g)</label>
+            <input id="massSlider" type="range"
+                   min="1" max="2000" step="1" value="500">
+            <div class="value" id="massValue">500 g</div>
+        </div>
 
-<div class="scene">
-  <div id="cube">
-    <!-- Vorderseite mit Teilchen -->
-    <div class="face" id="front"></div>
-    <!-- Weitere sichtbare Flächen -->
-    <div class="face" id="right"></div>
-    <div class="face" id="top"></div>
-  </div>
-</div>
+        <!-- Volumen -->
+        <div class="slider-group">
+            <label for="volumeSlider">Volumen des Würfels (mL)</label>
+            <input id="volumeSlider" type="range"
+                   min="1" max="1000" step="1" value="250">
+            <div class="value" id="volumeValue">250 mL</div>
+        </div>
 
-<div id="formula">
-  ρ =
-  <span class="fraction">
-    <span class="top">m</span>
-    <span class="bottom">V</span>
-  </span>
-  =
-  <span class="fraction">
-    <span class="top" id="mNum">50</span>
-    <span class="bottom" id="vNum">100</span>
-  </span>
-  =
-  <span id="rhoValue">0.50</span>
+        <!-- Formel -->
+        <div class="formula">
+            ρ = m / V
+        </div>
+
+        <div class="small">
+            Dichte = Masse ÷ Volumen
+        </div>
+
+        <!-- Ergebnisse -->
+        <div class="results">
+            <div><strong>Masse:</strong> <span id="massOut">500.0</span> g</div>
+            <div><strong>Volumen:</strong> <span id="volumeOut">250.0</span> mL</div>
+            <div><strong>Dichte:</strong> <span id="densityOut">2.000</span> g/mL</div>
+        </div>
+    </div>
+
+    <!-- RECHTE SEITE: Große Waage -->
+    <div class="card">
+        <h1>Interaktives Dichte-Widget</h1>
+
+        <div class="visual">
+            <svg viewBox="0 0 900 700">
+
+                <!-- Würfel -->
+                <rect id="cube"
+                      x="280" y="120"
+                      width="260" height="260"
+                      fill="#5aa9ff"
+                      stroke="#2d6fb8"
+                      stroke-width="6"
+                      rx="6"></rect>
+
+                <!-- Oberseite -->
+                <polygon id="cubeTop"
+                         points="280,120 340,60 600,60 540,120"
+                         fill="#8dc3ff"
+                         stroke="#2d6fb8"
+                         stroke-width="5"></polygon>
+
+                <!-- Seitenfläche -->
+                <polygon id="cubeSide"
+                         points="540,120 600,60 600,320 540,380"
+                         fill="#3f8fe0"
+                         stroke="#2d6fb8"
+                         stroke-width="5"></polygon>
+
+                <!-- Plattform -->
+                <rect x="180" y="380"
+                      width="480" height="40"
+                      rx="10"
+                      fill="#9aa4b2"
+                      stroke="#6b7280"
+                      stroke-width="5"></rect>
+
+                <!-- Waagenkörper -->
+                <rect x="120" y="420"
+                      width="600" height="220"
+                      rx="28"
+                      fill="#dbe3ec"
+                      stroke="#7c8796"
+                      stroke-width="6"></rect>
+
+                <!-- Display -->
+                <rect x="270" y="470"
+                      width="300" height="90"
+                      rx="12"
+                      fill="#111"
+                      stroke="#444"
+                      stroke-width="3"></rect>
+
+                <text id="display"
+                      x="420"
+                      y="530"
+                      text-anchor="middle"
+                      class="display-text"
+                      font-size="52">
+                    500.0 g
+                </text>
+
+                <!-- Beschriftung -->
+                <text x="420"
+                      y="590"
+                      text-anchor="middle"
+                      font-size="24"
+                      fill="#333">
+                    Masse-Regler
+                </text>
+
+                <!-- Regler direkt in der Waage -->
+                <foreignObject x="210"
+                               y="605"
+                               width="420"
+                               height="45">
+                    <input xmlns="http://www.w3.org/1999/xhtml"
+                           id="massSliderVisual"
+                           type="range"
+                           min="1"
+                           max="2000"
+                           step="1"
+                           value="500"
+                           style="width:100%; height:32px;">
+                </foreignObject>
+
+            </svg>
+        </div>
+    </div>
 </div>
 
 <script>
-const massSlider = document.getElementById("mass");
-const volumeSlider = document.getElementById("volume");
+const massSlider = document.getElementById('massSlider');
+const massSliderVisual = document.getElementById('massSliderVisual');
+const volumeSlider = document.getElementById('volumeSlider');
 
-const mVal = document.getElementById("mVal");
-const vVal = document.getElementById("vVal");
+const display = document.getElementById('display');
+const cube = document.getElementById('cube');
+const cubeTop = document.getElementById('cubeTop');
+const cubeSide = document.getElementById('cubeSide');
 
-const mNum = document.getElementById("mNum");
-const vNum = document.getElementById("vNum");
-const rhoValue = document.getElementById("rhoValue");
-
-const cube = document.getElementById("cube");
-const front = document.getElementById("front");
-const right = document.getElementById("right");
-const topFace = document.getElementById("top");
-
-function update() {
-  const m = parseInt(massSlider.value, 10);
-  const V = parseInt(volumeSlider.value, 10);
-  const rho = m / V;
-
-  // Anzeigen aktualisieren
-  mVal.textContent = m;
-  vVal.textContent = V;
-  mNum.textContent = m;
-  vNum.textContent = V;
-  rhoValue.textContent = rho.toFixed(2);
-
-  // Würfelgröße
-  const size = Math.cbrt(V) * 40;
-  cube.style.width = size + "px";
-  cube.style.height = size + "px";
-
-  // Flächen dimensionieren
-  [front, right, topFace].forEach(face => {
-    face.style.width = size + "px";
-    face.style.height = size + "px";
-  });
-
-  // 3D-Positionierung der Flächen
-  front.style.transform = `translateZ(${size / 2}px)`;
-  right.style.transform = `rotateY(90deg) translateZ(${size / 2}px)`;
-  topFace.style.transform = `rotateX(90deg) translateZ(${size / 2}px)`;
-
-  // Leichte Schattierung
-  front.style.background = "rgba(255,255,255,0.95)";
-  right.style.background = "rgba(220,220,220,0.95)";
-  topFace.style.background = "rgba(245,245,245,0.95)";
-
-  // Teilchen auf Vorderseite zeichnen
-  front.innerHTML = "";
-
-  const cols = Math.ceil(Math.sqrt(m));
-  const spacing = size / cols;
-  let count = 0;
-
-  for (let row = 0; row < cols; row++) {
-    for (let col = 0; col < cols; col++) {
-      if (count >= m) return;
-
-      const particle = document.createElement("div");
-      particle.className = "particle";
-      particle.style.left = (col * spacing + spacing / 2 - 2) + "px";
-      particle.style.top = (row * spacing + spacing / 2 - 2) + "px";
-
-      front.appendChild(particle);
-      count++;
+/* Beide Massenregler synchronisieren */
+function syncMass(value, source) {
+    if (source !== massSlider) {
+        massSlider.value = value;
     }
-  }
+    if (source !== massSliderVisual) {
+        massSliderVisual.value = value;
+    }
 }
 
-massSlider.addEventListener("input", update);
-volumeSlider.addEventListener("input", update);
+/* Würfelgröße entsprechend dem Volumen ändern */
+function updateCube(volume) {
+    const side = Math.max(120, Math.min(300, 30 * Math.cbrt(volume)));
 
+    const x = 420 - side / 2;
+    const y = 380 - side;
+
+    cube.setAttribute('x', x);
+    cube.setAttribute('y', y);
+    cube.setAttribute('width', side);
+    cube.setAttribute('height', side);
+
+    const d = Math.max(25, side * 0.22);
+
+    cubeTop.setAttribute(
+        'points',
+        `${x},${y} ${x+d},${y-d} ${x+side+d},${y-d} ${x+side},${y}`
+    );
+
+    cubeSide.setAttribute(
+        'points',
+        `${x+side},${y} ${x+side+d},${y-d} ` +
+        `${x+side+d},${y+side-d} ${x+side},${y+side}`
+    );
+}
+
+/* Alles aktualisieren */
+function update() {
+    const mass = parseFloat(massSlider.value);
+    const volume = parseFloat(volumeSlider.value);
+    const density = mass / volume;
+
+    // Waagendisplay
+    display.textContent = mass.toFixed(1) + ' g';
+
+    // Werte unter Reglern
+    document.getElementById('massValue').textContent =
+        mass.toFixed(0) + ' g';
+    document.getElementById('volumeValue').textContent =
+        volume.toFixed(0) + ' mL';
+
+    // Ergebnisse
+    document.getElementById('massOut').textContent =
+        mass.toFixed(1);
+    document.getElementById('volumeOut').textContent =
+        volume.toFixed(1);
+    document.getElementById('densityOut').textContent =
+        density.toFixed(3);
+
+    // Würfel anpassen
+    updateCube(volume);
+}
+
+/* Event-Listener */
+massSlider.addEventListener('input', (e) => {
+    syncMass(e.target.value, massSlider);
+    update();
+});
+
+massSliderVisual.addEventListener('input', (e) => {
+    syncMass(e.target.value, massSliderVisual);
+    update();
+});
+
+volumeSlider.addEventListener('input', update);
+
+/* Initiale Anzeige */
 update();
 </script>
 

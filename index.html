@@ -14,7 +14,7 @@ body {
     color: #222;
 }
 
-/* Linke Spalte = Legende, rechte Spalte = große Waage */
+/* Linke Spalte = Legende, rechte Spalte = Waage */
 .container {
     display: grid;
     grid-template-columns: 360px 1fr;
@@ -30,16 +30,7 @@ body {
     box-shadow: 0 8px 28px rgba(0,0,0,0.08);
 }
 
-h1 {
-    margin-top: 0;
-    font-size: 32px;
-}
-
-h2 {
-    margin-top: 0;
-    font-size: 24px;
-}
-
+/* Linke Spalte */
 .slider-group {
     margin-bottom: 30px;
 }
@@ -85,6 +76,7 @@ input[type="range"] {
     line-height: 2;
 }
 
+/* Rechte Spalte */
 .visual {
     height: 760px;
 }
@@ -112,16 +104,24 @@ svg {
         <!-- Masse -->
         <div class="slider-group">
             <label for="massSlider">Masse des Würfels (g)</label>
-            <input id="massSlider" type="range"
-                   min="1" max="2000" step="1" value="500">
+            <input id="massSlider"
+                   type="range"
+                   min="1"
+                   max="2000"
+                   step="1"
+                   value="500">
             <div class="value" id="massValue">500 g</div>
         </div>
 
         <!-- Volumen -->
         <div class="slider-group">
             <label for="volumeSlider">Volumen des Würfels (mL)</label>
-            <input id="volumeSlider" type="range"
-                   min="1" max="1000" step="1" value="250">
+            <input id="volumeSlider"
+                   type="range"
+                   min="1"
+                   max="1000"
+                   step="1"
+                   value="250">
             <div class="value" id="volumeValue">250 mL</div>
         </div>
 
@@ -142,17 +142,16 @@ svg {
         </div>
     </div>
 
-    <!-- RECHTE SEITE: Große Waage -->
+    <!-- RECHTE SEITE: Waage (ohne Überschrift) -->
     <div class="card">
-        <h1>Interaktives Dichte-Widget</h1>
-
         <div class="visual">
             <svg viewBox="0 0 900 700">
 
                 <!-- Würfel -->
                 <rect id="cube"
-                      x="280" y="120"
-                      width="260" height="260"
+                      x="320" y="120"
+                      width="200"
+                      height="200"
                       fill="#5aa9ff"
                       stroke="#2d6fb8"
                       stroke-width="6"
@@ -160,37 +159,43 @@ svg {
 
                 <!-- Oberseite -->
                 <polygon id="cubeTop"
-                         points="280,120 340,60 600,60 540,120"
+                         points="320,120 365,75 565,75 520,120"
                          fill="#8dc3ff"
                          stroke="#2d6fb8"
                          stroke-width="5"></polygon>
 
                 <!-- Seitenfläche -->
                 <polygon id="cubeSide"
-                         points="540,120 600,60 600,320 540,380"
+                         points="520,120 565,75 565,275 520,320"
                          fill="#3f8fe0"
                          stroke="#2d6fb8"
                          stroke-width="5"></polygon>
 
-                <!-- Plattform -->
-                <rect x="180" y="380"
-                      width="480" height="40"
+                <!-- Plattform der Waage -->
+                <rect x="220"
+                      y="320"
+                      width="400"
+                      height="40"
                       rx="10"
                       fill="#9aa4b2"
                       stroke="#6b7280"
                       stroke-width="5"></rect>
 
                 <!-- Waagenkörper -->
-                <rect x="120" y="420"
-                      width="600" height="220"
+                <rect x="140"
+                      y="360"
+                      width="560"
+                      height="240"
                       rx="28"
                       fill="#dbe3ec"
                       stroke="#7c8796"
                       stroke-width="6"></rect>
 
                 <!-- Display -->
-                <rect x="270" y="470"
-                      width="300" height="90"
+                <rect x="290"
+                      y="420"
+                      width="260"
+                      height="90"
                       rx="12"
                       fill="#111"
                       stroke="#444"
@@ -198,16 +203,16 @@ svg {
 
                 <text id="display"
                       x="420"
-                      y="530"
+                      y="480"
                       text-anchor="middle"
                       class="display-text"
-                      font-size="52">
+                      font-size="50">
                     500.0 g
                 </text>
 
                 <!-- Beschriftung -->
                 <text x="420"
-                      y="590"
+                      y="545"
                       text-anchor="middle"
                       font-size="24"
                       fill="#333">
@@ -215,9 +220,9 @@ svg {
                 </text>
 
                 <!-- Regler direkt in der Waage -->
-                <foreignObject x="210"
-                               y="605"
-                               width="420"
+                <foreignObject x="220"
+                               y="560"
+                               width="400"
                                height="45">
                     <input xmlns="http://www.w3.org/1999/xhtml"
                            id="massSliderVisual"
@@ -244,7 +249,7 @@ const cube = document.getElementById('cube');
 const cubeTop = document.getElementById('cubeTop');
 const cubeSide = document.getElementById('cubeSide');
 
-/* Beide Massenregler synchronisieren */
+/* Synchronisiert beide Massenregler */
 function syncMass(value, source) {
     if (source !== massSlider) {
         massSlider.value = value;
@@ -254,42 +259,60 @@ function syncMass(value, source) {
     }
 }
 
-/* Würfelgröße entsprechend dem Volumen ändern */
+/* Passt die Würfelgröße so an, dass er vollständig auf der Waage bleibt */
 function updateCube(volume) {
-    const side = Math.max(120, Math.min(300, 30 * Math.cbrt(volume)));
+    // Größe proportional zur Kubikwurzel des Volumens
+    let side = 22 * Math.cbrt(volume);
 
-    const x = 420 - side / 2;
-    const y = 380 - side;
+    // Begrenzung, damit der Würfel komplett auf der Plattform bleibt
+    side = Math.max(100, Math.min(260, side));
+
+    // Plattform: x = 220, Breite = 400
+    // Würfel mittig auf der Plattform
+    const centerX = 420;
+    const x = centerX - side / 2;
+
+    // Plattform-Oberkante liegt bei y = 320
+    const platformY = 320;
+    const y = platformY - side;
 
     cube.setAttribute('x', x);
     cube.setAttribute('y', y);
     cube.setAttribute('width', side);
     cube.setAttribute('height', side);
 
-    const d = Math.max(25, side * 0.22);
+    // Tiefe für 3D-Effekt
+    const d = Math.max(20, side * 0.22);
 
+    // Oberseite
     cubeTop.setAttribute(
         'points',
-        `${x},${y} ${x+d},${y-d} ${x+side+d},${y-d} ${x+side},${y}`
+        `${x},${y} ` +
+        `${x+d},${y-d} ` +
+        `${x+side+d},${y-d} ` +
+        `${x+side},${y}`
     );
 
+    // Seitenfläche
     cubeSide.setAttribute(
         'points',
-        `${x+side},${y} ${x+side+d},${y-d} ` +
-        `${x+side+d},${y+side-d} ${x+side},${y+side}`
+        `${x+side},${y} ` +
+        `${x+side+d},${y-d} ` +
+        `${x+side+d},${y+side-d} ` +
+        `${x+side},${y+side}`
     );
 }
 
-/* Alles aktualisieren */
+/* Aktualisiert alle Werte */
 function update() {
     const mass = parseFloat(massSlider.value);
     const volume = parseFloat(volumeSlider.value);
     const density = mass / volume;
 
-    // Waagendisplay
+    // Display auf der Waage
     display.textContent = mass.toFixed(1) + ' g';
 
-    // Werte unter Reglern
+    // Werte bei den Reglern
     document.getElementById('massValue').textContent =
         mass.toFixed(0) + ' g';
     document.getElementById('volumeValue').textContent =
@@ -303,7 +326,7 @@ function update() {
     document.getElementById('densityOut').textContent =
         density.toFixed(3);
 
-    // Würfel anpassen
+    // Würfelgröße aktualisieren
     updateCube(volume);
 }
 
@@ -320,7 +343,7 @@ massSliderVisual.addEventListener('input', (e) => {
 
 volumeSlider.addEventListener('input', update);
 
-/* Initiale Anzeige */
+/* Initialisierung */
 update();
 </script>
 
